@@ -25,7 +25,7 @@ class SearchPlaceRequest extends FormRequest
     {
         return [
             'query' => ['required', 'string'],
-            'next_page_token' => ['required', 'string'],
+            'next_page_token' => ['nullable', 'string'],
         ];
     }
 }

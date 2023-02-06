@@ -38,9 +38,7 @@ class GoogleMapService
             'fields' => 'formatted_address%2Cname%2Cgeometry%2Cphotos',
             'query' => $query,
             'inputtype' => 'textquery',
-            'key' => config('services.google_map.key'),
-            // 'radius' => 5000,
-            // 'location' => '18.285248643840823, 99.49075036428823',
+            'key' => config('services.google.google_map_key'),
             'language' => 'th',
             'types' => 'restaurant|food',
         ]);
@@ -56,7 +54,7 @@ class GoogleMapService
     {
         $request = Http::get('https://maps.googleapis.com/maps/api/place/textsearch/json', [
             'fields' => 'formatted_address%2Cname%2Cgeometry%2Cphotos',
-            'key' => config('services.google_map.key'),
+            'key' => config('services.google.google_map_key'),
             'language' => 'th',
             'pagetoken' => $next_page_token,
         ]);
