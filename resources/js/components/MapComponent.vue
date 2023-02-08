@@ -2,7 +2,7 @@
   <div class="position-relative">
     <div class="w-100 p-3 position-absolute">
       <div class="row">
-        <div class="col-md-6 col-lg-5 col-xl-4 position-relative">
+        <div class="col-md-6 col-lg-5 col-xl-4 col-xxl-3 position-relative">
           <div class="position-absolute w-fit" style="z-index: 9;">
             <div class="input-group">
               <input
@@ -12,75 +12,88 @@
                 @keydown="debounceSearch"
                 @keydown.enter="doSearch"
               >
-              <button class="input-group-text bg-light border-start-0" @click.left="doSearch">
+              <button class="input-group-text bg-light border-start-0" @click.left.exact="doSearch">
                 <font-awesome-icon icon="fa-solid fa-magnifying-glass"/>
               </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div v-if="data.length" class="row">
-        <div class="col-md-6 col-lg-5 col-xl-4 position-relative">
-          <div class="restaurent-list">
-            <div class="restaurent-container">
-              <div class="row g-0">
-                <template v-for="restaurent in data">
-                  <div class="col-11 col-sm-8 col-md-12 border-end border-end-md-0 border-top-md">
-                    <div class="p-3">
-                      <div class="mb-2">
-                        <span class="h5">{{ restaurent.name }}</span>
-                        <span class="small text-secondary">
-                          (
-                          <font-awesome-icon icon="fa-solid fa-star"/>
-                          {{ restaurent.rating }}
-                          )
-                        </span>
+    <div class="row justify-content-end flex-md-row-reverse g-0">
+      <div
+        :class="{
+          'px-0': true,
+          'col-12': !data.length,
+          'col-md-6 col-lg-7 col-xl-8 col-xxl-9': data.length,
+        }"
+      >
+        <GoogleMap
+          :api-key="map_key"
+          :center="center"
+          :zoom="zoom"
+          :fullscreen-control="false"
+          :map-type-control="false"
+          class="map-content"
+        >
+          <template v-for="marker in data">
+            <Marker :options="{ position: marker.geometry.location }"/>
+          </template>
+        </GoogleMap>
+      </div>
+
+      <div v-if="data.length" class="col-md-6 col-lg-5 col-xl-4 col-xxl-3 px-0">
+        <div class="restaurent-list">
+          <div class="restaurent-container">
+            <div class="row g-0">
+              <template v-for="restaurent in data">
+                <div
+                  class="col-11 col-sm-8 col-md-12 border-end border-end-md-0 border-top-md cursor-pointer"
+                  @click.exact="panTo(restaurent.geometry.location)"
+                >
+                  <div class="p-3">
+                    <div class="mb-2">
+                      <span class="h5">{{ restaurent.name }}</span>
+                      <span class="small text-secondary">
+                        (
+                        <font-awesome-icon icon="fa-solid fa-star"/>
+                        {{ restaurent.rating }}
+                        )
+                      </span>
+                    </div>
+
+                    <div class="d-flex">
+                      <div>
+                        <img
+                          v-if="restaurent.photos"
+                          :src="`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${ restaurent.photos[0].photo_reference }&key=${ map_key }`"
+                          alt="restaurent image"
+                        >
+                        <img v-else src="../../images/no-img.png" alt="no image">
                       </div>
 
-                      <div class="d-flex">
-                        <div>
-                          <img
-                            v-if="restaurent.photos"
-                            :src="`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${ restaurent.photos[0].photo_reference }&key=${ map_key }`"
-                            alt="restaurent image"
-                          >
-                          <img v-else src="../../images/no-img.png" alt="no image">
-                        </div>
-
-                        <div class="w-100 ms-2">
-                          <div class="text-secondary">
-                            {{ restaurent.formatted_address }}
-                          </div>
+                      <div class="w-100 ms-2">
+                        <div class="text-secondary">
+                          {{ restaurent.formatted_address }}
                         </div>
                       </div>
                     </div>
                   </div>
-                </template>
+                </div>
+              </template>
 
-                <template v-if="next_page_token">
-                  <div class="col-4 col-md-12">
-                    <scroll-load @enterView="doSearch"/>
-                  </div>
-                </template>
-              </div>
+              <template v-if="next_page_token">
+                <div class="col-4 col-md-12">
+                  <scroll-load @enterView="doSearch(false)"/>
+                </div>
+              </template>
             </div>
           </div>
         </div>
       </div>
+
     </div>
-    <GoogleMap
-      :api-key="map_key"
-      style="width: 100%; height: 100vh;"
-      :center="center"
-      :zoom="15"
-      :fullscreen-control="false"
-      :map-type-control="false"
-    >
-      <template v-for="marker in data">
-        <Marker :options="{ position: marker.geometry.location }"/>
-      </template>
-    </GoogleMap>
   </div>
 </template>
 
@@ -100,6 +113,7 @@ defineComponent({
 
 const map_key = import.meta.env.VITE_GOOGLE_MAP_KEY
 const center = ref({ lat: 13.754553, lng: 100.492867 })
+const zoom = ref(15)
 
 const search = ref('Bang sue')
 const next_page_token = ref('')
@@ -112,8 +126,13 @@ onMounted(() => {
 
 const debounceSearch = _.debounce(doSearch, 700)
 
-function doSearch () {
+function doSearch (new_search = true) {
   if (search.value) {
+    if (!next_page_token.value || new_search) {
+      next_page_token.value = null
+      data.value = []
+    }
+
     axios.get(props.searchApi, {
       params: {
         query: search.value,
@@ -124,6 +143,7 @@ function doSearch () {
         if (response.data.results.length) {
           if (!data.value.length) {
             center.value = response.data.results[0].geometry.location
+            zoom.value = 15
           }
 
           next_page_token.value = response.data.next_page_token || ''
@@ -133,12 +153,13 @@ function doSearch () {
   }
 }
 
-watch(() => search, (search) => {
-  next_page_token.value = ''
+function panTo (location) {
+  center.value = location
+  zoom.value = 18
+}
 
-  if (!search) {
-    data.value = []
-  }
+watch(search, (search) => {
+  next_page_token.value = ''
 })
 
 </script>
@@ -149,19 +170,23 @@ watch(() => search, (search) => {
 @import 'bootstrap/scss/_mixins.scss';
 
 .w-fit {
-  width: calc(100% - 24px);
+  width: calc(100% - 28px);
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 @include media-breakpoint-up(md) {
-  .restaurent-list {
-    position: absolute;
-    z-index: 8;
-    width: calc(100% + 8px);
+  .map-content {
+    width: 100%;
     height: 100vh;
-    left: -4px;
-    top: -16px;
+  }
+
+  .restaurent-list {
+    height: 100vh;
     background-color: white;
-    padding: 70px 12px 12px;
+    padding: 70px 16px 12px;
 
     & .restaurent-container {
       max-height: 100%;
@@ -178,19 +203,20 @@ watch(() => search, (search) => {
 }
 
 @include media-breakpoint-down(md) {
+  .map-content {
+    width: 100%;
+    height: calc(100vh - 220px);
+  }
+
   .restaurent-list {
-    position: absolute;
-    z-index: 8;
-    width: calc(100% + 8px);
     height: 220px;
     left: -4px;
-    top: calc(100vh - 220px - 16px);
     background-color: white;
-    padding: 12px;
+    padding: 16px;
 
     & .restaurent-container {
       max-height: 100%;
-      overflow-x: auto;
+      overflow: auto;
 
       & .row {
         flex-wrap: nowrap !important;
