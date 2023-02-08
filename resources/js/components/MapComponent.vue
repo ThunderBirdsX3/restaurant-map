@@ -49,21 +49,21 @@
 
       <!--data list-->
       <div v-if="data.length" class="col-md-6 col-lg-5 col-xl-4 col-xxl-3 px-0">
-        <div class="restaurent-list">
-          <div class="restaurent-container">
+        <div class="restaurant-list">
+          <div class="restaurant-container">
             <div class="row g-0">
-              <template v-for="restaurent in data">
+              <template v-for="restaurant in data">
                 <div
                   class="col-11 col-sm-8 col-md-12 border-end border-end-md-0 border-top-md cursor-pointer"
-                  @click.exact="panTo(restaurent.geometry.location)"
+                  @click.exact="panTo(restaurant.geometry.location)"
                 >
                   <div class="p-3">
                     <div class="mb-2">
-                      <span class="h5">{{ restaurent.name }}</span>
+                      <span class="h5">{{ restaurant.name }}</span>
                       <span class="small text-secondary">
                         (
                         <font-awesome-icon icon="fa-solid fa-star"/>
-                        {{ restaurent.rating }}
+                        {{ restaurant.rating }}
                         )
                       </span>
                     </div>
@@ -71,16 +71,16 @@
                     <div class="d-flex">
                       <div>
                         <img
-                          v-if="restaurent.photos"
-                          :src="`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${ restaurent.photos[0].photo_reference }&key=${ map_key }`"
-                          alt="restaurent image"
+                          v-if="restaurant.photos"
+                          :src="`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${ restaurant.photos[0].photo_reference }&key=${ map_key }`"
+                          alt="restaurant image"
                         >
                         <img v-else src="../../images/no-img.png" alt="no image">
                       </div>
 
                       <div class="w-100 ms-2">
                         <div class="text-secondary">
-                          {{ restaurent.formatted_address }}
+                          {{ restaurant.formatted_address }}
                         </div>
                       </div>
                     </div>
@@ -194,12 +194,12 @@ watch(search, () => {
     height: 100vh;
   }
 
-  .restaurent-list {
+  .restaurant-list {
     height: 100vh;
     background-color: white;
     padding: 70px 16px 12px;
 
-    & .restaurent-container {
+    & .restaurant-container {
       max-height: 100%;
       overflow-y: auto;
 
@@ -219,13 +219,13 @@ watch(search, () => {
     height: calc(100vh - 220px);
   }
 
-  .restaurent-list {
+  .restaurant-list {
     height: 220px;
     left: -4px;
     background-color: white;
     padding: 16px;
 
-    & .restaurent-container {
+    & .restaurant-container {
       max-height: 100%;
       overflow: auto;
 
