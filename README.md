@@ -2,6 +2,8 @@
 
 `bash sail up -d`
 
+wait for a minute to let `composer install` run completely
+
 then run 
 
 `bash sail npm i && bash sail npm run build`
