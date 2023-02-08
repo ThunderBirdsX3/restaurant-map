@@ -1,5 +1,6 @@
 <template>
   <div class="position-relative">
+    <!--input search-->
     <div class="w-100 p-3 position-absolute">
       <div class="row">
         <div class="col-md-6 col-lg-5 col-xl-4 col-xxl-3 position-relative">
@@ -20,8 +21,10 @@
         </div>
       </div>
     </div>
+    <!--input search-->
 
     <div class="row justify-content-end flex-md-row-reverse g-0">
+      <!--GoogleMap-->
       <div
         :class="{
           'px-0': true,
@@ -42,7 +45,9 @@
           </template>
         </GoogleMap>
       </div>
+      <!--GoogleMap-->
 
+      <!--data list-->
       <div v-if="data.length" class="col-md-6 col-lg-5 col-xl-4 col-xxl-3 px-0">
         <div class="restaurent-list">
           <div class="restaurent-container">
@@ -92,7 +97,7 @@
           </div>
         </div>
       </div>
-
+      <!--data list-->
     </div>
   </div>
 </template>
@@ -124,10 +129,13 @@ onMounted(() => {
   doSearch()
 })
 
+// หน่วงการเรียก api กรณีพิมพ์คำค้นหาใหม่
 const debounceSearch = _.debounce(doSearch, 700)
 
 function doSearch (new_search = true) {
   if (search.value) {
+    // ถ้าเรียก โดยไม่มี next_page_token หรือเป็นการค้นหาใหม่
+    // ให้ set next_page_token และ data เป็นค่าว่าง
     if (!next_page_token.value || new_search) {
       next_page_token.value = null
       data.value = []
@@ -140,10 +148,11 @@ function doSearch (new_search = true) {
       },
     })
       .then((response) => {
+        // ถ้ามีข้อมูลที่ค้นหา
         if (response.data.results.length) {
+          // ในกรณีที่เป็นการ load ข้อมูลใหม่ ให้ pan ไปหาจุดแรก
           if (!data.value.length) {
-            center.value = response.data.results[0].geometry.location
-            zoom.value = 15
+            panTo(response.data.results[0].geometry.location, 15)
           }
 
           next_page_token.value = response.data.next_page_token || ''
@@ -153,12 +162,14 @@ function doSearch (new_search = true) {
   }
 }
 
-function panTo (location) {
+// ย้ายหน้าจอไปยังจุดศูนย์กลาง
+function panTo (location, zoom_to = 18) {
   center.value = location
-  zoom.value = 18
+  zoom.value = zoom_to
 }
 
-watch(search, (search) => {
+// ถ้ามีการเปลี่ยนแปลงคำค้นหา ถือว่าเป็นการค้นหาใหม่ ให้เคลียร์ next_page_token
+watch(search, () => {
   next_page_token.value = ''
 })
 

@@ -29,6 +29,8 @@ class GoogleMapService
     }
 
     /**
+     * ค้นหาสถานที่จาก google map ในกรณ์ที่เป็นการค้นหาคั้งแรก
+     *
      * @param string $query
      * @return array
      */
@@ -47,6 +49,8 @@ class GoogleMapService
     }
 
     /**
+     * ค้นหาสถานที่จาก google map ในกรณ์ที่เคยเรียกแล้วได้ next_page_token มาเพื่อดึงข้อมูลหน้าต่อไป
+     *
      * @param string $next_page_token
      * @return array
      */
